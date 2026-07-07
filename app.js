@@ -324,7 +324,7 @@ function updateMyPageUI() {
     const elName = document.getElementById('my-name');
     if (elName) elName.textContent = currentUser.name;
     const elTag = document.getElementById('my-tag');
-    if (elTag) elTag.textContent = `${currentUser.country} · ${currentUser.city}`;
+    if (elTag) elTag.textContent = `${currentUser.country} · ${currentUser.city} · ${currentUser.job}`;
     const elDeun = document.getElementById('my-deundeun');
     if (elDeun) elDeun.textContent = `${currentUser.deundeunScore}점`;
     const elCredit = document.getElementById('my-credit');
