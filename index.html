@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>워코뮤(Workommu) - 워킹홀리데이 도움 매칭 서비스</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header id="app-header" class="hidden">
+            <div class="header-content">
+                <div class="logo-area" id="btn-go-home">
+                    <img src="assets/kori_nuki.png" alt="Kori" class="header-logo">
+                    <span class="logo-text">워코뮤</span>
+                </div>
+                <div class="header-actions">
+                    <select id="user-switcher" class="user-select-dropdown">
+                    </select>
+                </div>
+            </div>
+        </header>
+
+        <!-- ONBOARDING SCREEN -->
+        <section id="onboarding-screen" class="screen active">
+            <div class="onboarding-card">
+                <div class="onboarding-header">
+                    <span class="subtitle">Welcome to Workommu</span>
+                    <h1 class="title">워킹홀리데이,<br><span class="highlight">워코뮤</span>와 함께해요!</h1>
+                    <p class="description">더 즐거운 워홀을 위해 정보를 입력해주세요.</p>
+                </div>
+                
+                <form id="onboarding-form">
+                    <div class="form-group">
+                        <label for="user-name">이름 (닉네임)</label>
+                        <div class="input-wrapper">
+                            <i class="fa-regular fa-user input-icon"></i>
+                            <input type="text" id="user-name" placeholder="이름을 입력해주세요" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user-country">목표 국가</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-earth-asia input-icon"></i>
+                            <select id="user-country" required>
+                                <option value="" disabled selected>국가를 선택해주세요</option>
+                                <option value="호주">호주</option>
+                                <option value="캐나다">캐나다</option>
+                                <option value="일본">일본</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user-city">희망 도시</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-city input-icon"></i>
+                            <select id="user-city" required disabled>
+                                <option value="" disabled selected>국가를 먼저 선택해주세요</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="user-job">희망 직군</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-briefcase input-icon"></i>
+                            <select id="user-job" required>
+                                <option value="" disabled selected>직군을 선택해주세요</option>
+                                <option value="농장">농장</option>
+                                <option value="공장">공장</option>
+                                <option value="서비스·요식업">서비스·요식업</option>
+                                <option value="사무직">사무직</option>
+                                <option value="기타">기타 (직접 입력)</option>
+                                <option value="아직 잘 모르겠음">아직 잘 모르겠음</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group hidden animate-fade-in" id="custom-job-group">
+                        <label for="user-custom-job">직접 입력</label>
+                        <div class="input-wrapper">
+                            <i class="fa-solid fa-pen input-icon"></i>
+                            <input type="text" id="user-custom-job" placeholder="희망 직군을 입력해주세요">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" id="btn-submit-onboarding">
+                        다음 <i class="fa-solid fa-chevron-right icon-right"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- MAIN APP CONTENT -->
+        <main id="main-content" class="hidden">
+            <!-- HOME VIEW -->
+            <section id="view-home" class="view active">
+                <div class="home-container">
+                    <div class="welcome-box">
+                        <h2>안녕, <span id="home-username" class="user-highlight">님</span>! 👋</h2>
+                        <p class="welcome-desc">
+                            <span id="home-country"></span> <span id="home-city"></span>에서 
+                            <span id="home-job" class="job-highlight"></span>의 여정을 시작해볼까?
+                        </p>
+                    </div>
+
+                    <div class="kori-showcase">
+                        <img src="assets/kori_magic.png" alt="Kori Character" class="kori-img">
+                    </div>
+
+
+
+                    <div class="guide-link-box" id="btn-home-to-help">
+                        <div class="guide-text">
+                            <h3>도움이 필요하신가요?</h3>
+                            <p>도움 게시판에서 매칭을 신청해보세요</p>
+                        </div>
+                        <i class="fa-solid fa-circle-arrow-right arrow-icon"></i>
+                    </div>
+                </div>
+            </section>
+
+            <!-- INFO BOARD VIEW -->
+            <section id="view-info" class="view">
+                <div class="view-header">
+                    <h2 class="view-title">정보 게시판</h2>
+                    <p class="view-subtitle">워홀 꿀팁을 공유하고 크레딧을 얻으세요!</p>
+                </div>
+
+                <!-- Post Creation Form -->
+                <div class="post-form-card">
+                    <form id="info-post-form">
+                        <div class="form-group">
+                            <input type="text" id="post-title" placeholder="제목을 입력하세요" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="post-content" placeholder="워홀러들에게 도움이 될 내용을 공유해주세요" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">글 올리기 (+1 CP)</button>
+                    </form>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <!-- Post List -->
+                <div id="info-posts-container" class="info-list">
+                    <!-- 글들이 여기에 동적으로 쌓임 -->
+                    <div class="no-posts">첫 번째 꿀팁의 주인공이 되어보세요!</div>
+                </div>
+            </section>
+
+            <!-- HELP BOARD VIEW -->
+            <section id="view-help" class="view">
+                <div class="view-header title-with-btn">
+                    <div>
+                        <h2 class="view-title">도움 게시판</h2>
+                        <p class="view-subtitle">든든한 동료들과 도움을 주고받으세요.</p>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="btn-open-help-modal">도움 요청</button>
+                </div>
+
+                <div id="help-list-container" class="help-list">
+                    <!-- 필터링된 도움 요청들이 여기에 표시됨 -->
+                    <div class="no-posts">현재 주변에 도움 요청이 없습니다.</div>
+                </div>
+            </section>
+
+            <!-- HELP REQUEST MODAL -->
+            <div id="help-modal" class="modal">
+                <div class="modal-overlay"></div>
+                <div class="modal-content animate-slide-up">
+                    <div class="modal-header">
+                        <h3>도움 요청하기</h3>
+                        <button class="btn-close-modal" id="btn-close-help-modal">&times;</button>
+                    </div>
+                    <form id="help-request-form">
+                        <div class="form-group">
+                            <label>카테고리 (필요 크레딧)</label>
+                            <select id="help-category" required>
+                                <option value="병원 동행" data-cost="1">병원 동행 (1 CP)</option>
+                                <option value="일자리 소개" data-cost="2">일자리 소개 (2 CP)</option>
+                                <option value="카풀" data-cost="3">카풀 (3 CP)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>내용</label>
+                            <textarea id="help-content" placeholder="어떤 도움이 필요한가요?" required></textarea>
+                        </div>
+                        <div class="form-group flex-between">
+                            <label>같은 동네(도시)만 노출</label>
+                            <label class="switch">
+                                <input type="checkbox" id="help-city-only">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id="btn-submit-help-request" class="btn btn-primary btn-block">요청하기</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <section id="view-mypage" class="view">
+                <div class="profile-card">
+                    <h3 id="my-name">사용자</h3>
+                    <p id="my-tag"></p>
+                    <div class="profile-details-grid">
+                        <div class="detail-item"><span class="detail-label">든든 점수</span><span id="my-deundeun"></span></div>
+                        <div class="detail-item"><span class="detail-label">크레딧</span><span id="my-credit"></span></div>
+                    </div>
+                </div>
+                <div class="history-section">
+                    <h3>도움 히스토리</h3>
+                    <div id="history-container"></div>
+                </div>
+                <div class="settings-section" style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
+                    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--text-dark);">시스템 설정</h3>
+                    <button class="btn btn-primary-outline btn-block" onclick="goToOnboarding()">온보딩 화면 이동</button>
+                    <button class="btn btn-danger-outline btn-block" onclick="deleteAccount()">계정 삭제</button>
+                </div>
+            </section>
+        </main>
+
+        <!-- RESPONSE ACCEPT MODAL (For Requester) -->
+        <div id="response-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content animate-slide-up">
+                <div class="modal-header">
+                    <h3>도움 요청 응답</h3>
+                    <button class="btn-close-modal" id="btn-close-response-modal">&times;</button>
+                </div>
+                <div class="response-body">
+                    <p class="modal-msg">도움을 수락하시겠습니까?</p>
+                    <div id="responder-profile-preview" class="profile-preview-card">
+                        <!-- Responder info injected here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-decline-help" class="btn btn-secondary">거절</button>
+                    <button id="btn-accept-help" class="btn btn-primary">수락</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- USER DETAIL MODAL -->
+        <div id="user-detail-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content animate-slide-up">
+                <div class="modal-header">
+                    <h3>상세 정보</h3>
+                    <button class="btn-close-modal" id="btn-close-detail-modal">&times;</button>
+                </div>
+                <div id="user-detail-content">
+                    <!-- User history and details injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- REVIEW MODAL -->
+        <div id="review-modal" class="modal">
+            <div class="modal-overlay"></div>
+            <div class="modal-content animate-slide-up">
+                <div class="modal-header">
+                    <h3>도움 후기 남기기</h3>
+                    <button class="btn-close-modal" id="btn-close-review-modal">&times;</button>
+                </div>
+                <div class="review-body">
+                    <div class="form-group">
+                        <label>별점</label>
+                        <div class="star-rating">
+                            <button class="star-btn" data-value="1"><i class="fa-solid fa-star"></i></button>
+                            <button class="star-btn" data-value="2"><i class="fa-solid fa-star"></i></button>
+                            <button class="star-btn" data-value="3"><i class="fa-solid fa-star"></i></button>
+                            <button class="star-btn" data-value="4"><i class="fa-solid fa-star"></i></button>
+                            <button class="star-btn" data-value="5"><i class="fa-solid fa-star"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>코멘트</label>
+                        <textarea id="review-comment" placeholder="도움에 대한 후기를 남겨주세요." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-submit-review" class="btn btn-primary btn-block">후기 제출하기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAV -->
+        <nav id="bottom-nav" class="hidden">
+            <button class="nav-item" data-view="info"><i class="fa-regular fa-newspaper"></i><span>정보 게시판</span></button>
+            <button class="nav-item" data-view="help"><i class="fa-regular fa-handshake"></i><span>도움 게시판</span></button>
+            <button class="nav-item" data-view="mypage"><i class="fa-regular fa-user"></i><span>마이페이지</span></button>
+        </nav>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
