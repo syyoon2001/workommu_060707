@@ -95,6 +95,7 @@ function hideAllScreens() {
     document.getElementById('main-content').classList.add('hidden');
     document.getElementById('bottom-nav').classList.add('hidden');
     document.getElementById('app-header').classList.add('hidden');
+    document.getElementById('dev-panel').classList.add('hidden');
 }
 
 async function checkAppState() {
@@ -116,6 +117,7 @@ async function checkAppState() {
     const main = document.getElementById('main-content');
     const nav = document.getElementById('bottom-nav');
     const header = document.getElementById('app-header');
+    const devPanel = document.getElementById('dev-panel');
 
     if (!currentAuthUser) {
         authScreen.classList.remove('hidden');
@@ -136,6 +138,7 @@ async function checkAppState() {
     main.classList.remove('hidden');
     nav.classList.remove('hidden');
     header.classList.remove('hidden');
+    devPanel.classList.remove('hidden');
 
     updateAllUIs();
 }
