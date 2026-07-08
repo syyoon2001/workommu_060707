@@ -119,21 +119,72 @@ header {
     border: 1px solid var(--border-color);
 }
 
-.user-select-dropdown {
-    padding: 6px 12px;
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    background: white;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--primary-color);
-    cursor: pointer;
-    outline: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+/* Dev Panel (시연/테스트 전용 슬라이드 패널) */
+.dev-panel {
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: stretch;
+    z-index: 500;
 }
 
-.user-select-dropdown:focus {
-    border-color: var(--primary-color);
+.dev-panel-body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    background: rgba(90, 90, 90, 0.55);
+    border-radius: 10px 0 0 10px;
+    white-space: nowrap;
+    transition: width 0.25s ease, padding 0.25s ease, opacity 0.2s ease;
+}
+
+.dev-panel.open .dev-panel-body {
+    width: 150px;
+    padding: 10px;
+    opacity: 1;
+}
+
+.dev-panel-label {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.dev-panel-btn {
+    font-size: 0.72rem;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    cursor: pointer;
+}
+
+.dev-panel-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.dev-panel-toggle {
+    width: 22px;
+    align-self: stretch;
+    border: none;
+    border-radius: 10px 0 0 10px;
+    background: rgba(90, 90, 90, 0.4);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.7rem;
+    cursor: pointer;
+}
+
+.dev-panel.open .dev-panel-toggle {
+    border-radius: 0;
 }
 
 /* Main Content Area */

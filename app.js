@@ -137,8 +137,6 @@ async function checkAppState() {
     nav.classList.remove('hidden');
     header.classList.remove('hidden');
 
-    const switcher = document.getElementById('user-switcher');
-    if (switcher) switcher.value = currentUser.id;
     updateAllUIs();
 }
 
@@ -252,19 +250,24 @@ function checkOnboardingState() {
 }
 
 function setupEventListeners() {
-    const userSwitcher = document.getElementById('user-switcher');
     const infoPostForm = document.getElementById('info-post-form');
     const btnOpenHelp = document.getElementById('btn-open-help-modal');
     const btnCloseHelp = document.getElementById('btn-close-help-modal');
     const helpModal = document.getElementById('help-modal');
     const helpRequestForm = document.getElementById('help-request-form');
 
-    // User Switcher
-    userSwitcher.addEventListener('change', () => {
-        currentUser = users[userSwitcher.value];
-        saveAllData();
-        updateAllUIs();
-    });
+    // Dev Panel Toggle (시연/테스트 전용)
+    const btnToggleDevPanel = document.getElementById('btn-toggle-dev-panel');
+    if (btnToggleDevPanel) {
+        btnToggleDevPanel.addEventListener('click', () => {
+            const panel = document.getElementById('dev-panel');
+            const isOpen = panel.classList.toggle('open');
+            btnToggleDevPanel.setAttribute('aria-expanded', String(isOpen));
+            const icon = btnToggleDevPanel.querySelector('i');
+            icon.classList.toggle('fa-chevron-left', !isOpen);
+            icon.classList.toggle('fa-chevron-right', isOpen);
+        });
+    }
 
     // Info Post Submit
     if (infoPostForm) {
@@ -443,20 +446,11 @@ function switchView(viewName) {
 }
 
 function updateAllUIs() {
-    updateUserSwitcher();
     updateHomeUI();
     updateMyPageUI();
     renderInfoPosts();
     renderHelpRequests();
     checkIncomingResponses();
-}
-
-function updateUserSwitcher() {
-    const switcher = document.getElementById('user-switcher');
-    if (!switcher || !currentUser) return;
-
-    switcher.innerHTML = `<option value="${currentUser.id}">${currentUser.name} (${currentUser.city}, ${currentUser.job})</option>`;
-    switcher.value = currentUser.id;
 }
 
 function updateHomeUI() {

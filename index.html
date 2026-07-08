@@ -20,10 +20,6 @@
                     <img src="assets/kori_nuki.png" alt="Kori" class="header-logo">
                     <span class="logo-text">워코뮤</span>
                 </div>
-                <div class="header-actions">
-                    <select id="user-switcher" class="user-select-dropdown">
-                    </select>
-                </div>
             </div>
         </header>
 
@@ -288,10 +284,20 @@
                 </div>
                 <div class="settings-section" style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
                     <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--text-dark);">시스템 설정</h3>
-                    <button class="btn btn-primary-outline btn-block" onclick="goToOnboarding()">온보딩 화면 이동</button>
-                    <button class="btn btn-danger-outline btn-block" onclick="clearBoards()">게시판 초기화</button>
                     <button class="btn btn-secondary btn-block" onclick="logout()">로그아웃</button>
                     <button id="btn-delete-account" class="btn btn-danger-outline btn-block" onclick="deleteAccount()">계정 삭제</button>
+                </div>
+
+                <!-- DEV PANEL (시연/테스트 전용, 실서비스 노출용 아님) -->
+                <div id="dev-panel" class="dev-panel">
+                    <div class="dev-panel-body">
+                        <span class="dev-panel-label">TEST</span>
+                        <button class="dev-panel-btn" onclick="clearBoards()">게시판 초기화</button>
+                        <button class="dev-panel-btn" onclick="goToOnboarding()">온보딩 화면 이동</button>
+                    </div>
+                    <button id="btn-toggle-dev-panel" class="dev-panel-toggle" aria-label="테스트 패널 열기/닫기" aria-expanded="false">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
                 </div>
             </section>
         </main>
