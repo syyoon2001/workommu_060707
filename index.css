@@ -924,7 +924,7 @@ nav {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #fff;
+    background: #D4EBF5;
     border: 2px solid var(--primary-light);
     display: flex;
     justify-content: center;
@@ -937,12 +937,12 @@ nav {
    object-fit만으로는 얼굴을 확대할 수 없어, 실제 크기로 키운 뒤
    얼굴 부분이 원 안에 오도록 위치를 옮겨서 보여준다. */
 .profile-avatar-img {
-    width: 320px;
-    height: 174px;
+    width: 262px;
+    height: 143px;
     max-width: none;
     position: relative;
-    left: -130px;
-    top: -45px;
+    left: -88px;
+    top: -27px;
 }
 
 .profile-meta {
