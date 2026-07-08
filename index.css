@@ -26,7 +26,7 @@
 }
 
 body {
-    background-color: #f1f5f9; /* 차분한 라이트 그레이 */
+    background-color: #E7F1F3; /* 앱 팔레트와 통일된 차분한 블루/민트 */
     color: var(--text-dark);
     display: flex;
     justify-content: center;
@@ -379,7 +379,7 @@ main {
 .form-group select:focus,
 .form-group textarea:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+    box-shadow: 0 0 0 3px rgba(73, 109, 140, 0.15);
 }
 
 /* Custom buttons */
@@ -410,7 +410,7 @@ main {
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    box-shadow: 0 6px 20px rgba(73, 109, 140, 0.4);
 }
 
 .btn-primary:active {
@@ -433,7 +433,7 @@ main {
 }
 
 .btn-primary-outline:hover {
-    background: rgba(67, 97, 238, 0.08);
+    background: rgba(73, 109, 140, 0.08);
 }
 
 .btn-danger-outline {
@@ -443,7 +443,7 @@ main {
 }
 
 .btn-danger-outline:hover {
-    background: rgba(230, 57, 70, 0.08);
+    background: rgba(191, 97, 106, 0.08);
 }
 
 .btn-sm {
@@ -599,7 +599,7 @@ main {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+    box-shadow: 0 4px 12px rgba(73, 109, 140, 0.2);
     transition: transform 0.2s ease;
 }
 
