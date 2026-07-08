@@ -951,6 +951,18 @@ nav {
     margin-bottom: 4px;
 }
 
+.detail-icon {
+    margin-right: 4px;
+}
+
+.detail-icon.icon-pink {
+    color: var(--heart-color);
+}
+
+.detail-icon.icon-yellow {
+    color: var(--gold-color);
+}
+
 .detail-value {
     font-size: 0.85rem;
     font-weight: 700;

@@ -291,7 +291,7 @@ function setupEventListeners() {
             infoPostForm.reset();
             saveAllData();
             updateAllUIs();
-            alert('글이 등록되었습니다! 1 CP를 획득하셨습니다.');
+            alert('글이 등록되었습니다! 1 C를 획득하셨습니다.');
         });
     }
 
@@ -472,7 +472,7 @@ function updateMyPageUI() {
     const elDeun = document.getElementById('my-deundeun');
     if (elDeun) elDeun.textContent = `${currentUser.deundeunScore}점`;
     const elCredit = document.getElementById('my-credit');
-    if (elCredit) elCredit.textContent = `${currentUser.helpCredit} CP`;
+    if (elCredit) elCredit.textContent = `${currentUser.helpCredit} C`;
     
     renderHistory();
 }
@@ -500,7 +500,7 @@ function renderHistory() {
                     <span class="history-date">${h.date}</span>
                 </div>
                 <div class="history-actions">
-                    <span class="history-amount ${h.amount > 0 ? 'plus' : 'minus'}">${h.amount > 0 ? '+' : ''}${h.amount} CP</span>
+                    <span class="history-amount ${h.amount > 0 ? 'plus' : 'minus'}">${h.amount > 0 ? '+' : ''}${h.amount} C</span>
                     ${reviewBtn}
                 </div>
             </div>
@@ -561,7 +561,7 @@ function renderHelpRequests() {
             <div class="help-card">
                 <div class="help-card-header">
                     <span class="help-category-badge">${req.category}</span>
-                    <span class="help-price"><i class="fa-solid fa-coins"></i> ${req.cost} CP</span>
+                    <span class="help-price"><i class="fa-solid fa-coins"></i> ${req.cost} C</span>
                 </div>
                 <div class="help-title">${req.content}</div>
                 <div class="help-footer">
