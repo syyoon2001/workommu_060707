@@ -901,6 +901,19 @@ nav {
     box-shadow: 0 4px 15px rgba(0,0,0,0.02);
 }
 
+.profile-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+}
+
+.profile-tag-text {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
 .profile-main {
     display: flex;
     align-items: center;
@@ -1076,8 +1089,72 @@ nav {
     font-weight: 600;
 }
 
-.danger-zone {
-    margin-top: 10px;
+.settings-section {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.settings-list {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.settings-row {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.settings-row:last-child {
+    border-bottom: none;
+}
+
+.settings-row:hover {
+    background: rgba(73, 109, 140, 0.06);
+}
+
+.settings-row-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.settings-row-label i {
+    width: 18px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.settings-row-arrow {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.settings-row-danger {
+    color: var(--danger-color);
+}
+
+.settings-row-danger .settings-row-label i {
+    color: var(--danger-color);
+}
+
+.settings-row-danger:hover {
+    background: rgba(191, 97, 106, 0.06);
 }
 
 /* Star Rating */
