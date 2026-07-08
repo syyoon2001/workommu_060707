@@ -95,10 +95,13 @@ function hideAllScreens() {
     document.getElementById('main-content').classList.add('hidden');
     document.getElementById('bottom-nav').classList.add('hidden');
     document.getElementById('app-header').classList.add('hidden');
-    document.getElementById('dev-panel').classList.add('hidden');
 }
 
 async function checkAppState() {
+    // TEST 패널은 로그인 여부와 무관하게 항상 노출(시연/테스트 전용)
+    document.getElementById('dev-panel').classList.remove('hidden');
+    updateDevUserSwitcher();
+
     if (!supabaseClient) {
         hideAllScreens();
         const authScreen = document.getElementById('auth-screen');
@@ -117,7 +120,6 @@ async function checkAppState() {
     const main = document.getElementById('main-content');
     const nav = document.getElementById('bottom-nav');
     const header = document.getElementById('app-header');
-    const devPanel = document.getElementById('dev-panel');
 
     if (!currentAuthUser) {
         authScreen.classList.remove('hidden');
@@ -138,7 +140,6 @@ async function checkAppState() {
     main.classList.remove('hidden');
     nav.classList.remove('hidden');
     header.classList.remove('hidden');
-    devPanel.classList.remove('hidden');
 
     updateAllUIs();
 }
