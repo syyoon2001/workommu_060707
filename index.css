@@ -911,7 +911,6 @@ nav {
 .profile-tag-text {
     font-size: 0.82rem;
     color: var(--text-muted);
-    margin-bottom: 16px;
 }
 
 .profile-main {
@@ -931,18 +930,23 @@ nav {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
-.profile-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+/* kori_nuki.png는 넓은 여백 안에 작은 전신 캐릭터가 있는 이미지라
+   object-fit만으로는 얼굴을 확대할 수 없어, 실제 크기로 키운 뒤
+   얼굴 부분이 원 안에 오도록 위치를 옮겨서 보여준다. */
+.profile-avatar-img {
+    width: 320px;
+    height: 174px;
+    max-width: none;
+    position: relative;
+    left: -130px;
+    top: -45px;
 }
 
-.profile-meta h3 {
-    font-size: 1.15rem;
-    font-weight: 700;
-    margin-bottom: 4px;
+.profile-meta {
+    min-width: 0;
 }
 
 .profile-tag {
