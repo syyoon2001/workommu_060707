@@ -763,26 +763,13 @@ window.clearBoards = async function() {
     if (confirm('정말로 정보 게시판과 도움 게시판의 모든 글을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며, Supabase 데이터베이스와 화면의 목록이 즉시 초기화됩니다.\n(프로필, 크레딧, 든든 점수, 도움 히스토리는 안전하게 유지됩니다)')) {
         try {
             // 1. Supabase에서 정보 게시판(info_posts)과 도움 게시판(help_requests)의 모든 데이터 삭제
+            // RLS DELETE 정책이 "본인 글만" 삭제를 허용하므로, 전체 삭제는 SECURITY DEFINER RPC를 통해 수행한다.
             if (supabaseClient) {
-                const { error: infoError } = await supabaseClient
-                    .from('info_posts')
-                    .delete()
-                    .not('id', 'is', null);
+                const { error: clearError } = await supabaseClient.rpc('clear_boards');
 
-                if (infoError) {
-                    console.error('Supabase info_posts 삭제 실패:', infoError);
-                    alert('정보 게시판 데이터 삭제 중 오류가 발생했습니다: ' + infoError.message);
-                    return;
-                }
-
-                const { error: helpError } = await supabaseClient
-                    .from('help_requests')
-                    .delete()
-                    .not('id', 'is', null);
-
-                if (helpError) {
-                    console.error('Supabase help_requests 삭제 실패:', helpError);
-                    alert('도움 게시판 데이터 삭제 중 오류가 발생했습니다: ' + helpError.message);
+                if (clearError) {
+                    console.error('Supabase 게시판 초기화 실패:', clearError);
+                    alert('게시판 데이터 삭제 중 오류가 발생했습니다: ' + clearError.message);
                     return;
                 }
             }
