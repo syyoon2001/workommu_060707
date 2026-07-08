@@ -8,6 +8,8 @@ function getDefaultUsers() {
     return {};
 }
 
+let supabaseClient = null;
+let currentAuthUser = null;
 let users = {};
 let currentUser = null;
 let helpRequests = [];
@@ -16,10 +18,29 @@ let currentReviewingHistoryId = null;
 let currentReviewRating = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+});
+
+async function initApp() {
+    initSupabase();
     initData();
     setupEventListeners();
-    checkOnboardingState();
-});
+    setupAuthListeners();
+    await checkAppState();
+}
+
+function initSupabase() {
+    const config = window.SUPABASE_CONFIG;
+    if (!config?.url || !config?.publishableKey) {
+        showAuthMessage('Supabase 설정이 없습니다. config.example.js를 config.js로 복사해주세요.', 'error');
+        return;
+    }
+    supabaseClient = supabase.createClient(config.url, config.publishableKey);
+}
+
+function getOnboardedKey(userId) {
+    return `workommu_onboarded_${userId}`;
+}
 
 function initData() {
     // Load Users
@@ -42,19 +63,10 @@ function initData() {
         localStorage.setItem('workommu_users', JSON.stringify(users));
     }
 
-    // Load Current User ID
+    // Load Current User ID (set after auth in checkAppState)
     const savedUserId = localStorage.getItem('workommu_current_user_id');
     if (savedUserId && users[savedUserId]) {
         currentUser = users[savedUserId];
-    } else {
-        const userKeys = Object.keys(users);
-        if (userKeys.length > 0) {
-            currentUser = users[userKeys[0]];
-            localStorage.setItem('workommu_current_user_id', currentUser.id);
-        } else {
-            currentUser = null;
-            localStorage.removeItem('workommu_current_user_id');
-        }
     }
 
     // Load Posts & Requests
@@ -74,29 +86,169 @@ function saveAllData() {
     localStorage.setItem('workommu_help_requests', JSON.stringify(helpRequests));
 }
 
-function checkOnboardingState() {
-    const onboarded = localStorage.getItem('workommu_onboarded');
+function hideAllScreens() {
+    ['auth-screen', 'onboarding-screen'].forEach(id => {
+        const el = document.getElementById(id);
+        el.classList.add('hidden');
+        el.classList.remove('active');
+    });
+    document.getElementById('main-content').classList.add('hidden');
+    document.getElementById('bottom-nav').classList.add('hidden');
+    document.getElementById('app-header').classList.add('hidden');
+}
+
+async function checkAppState() {
+    if (!supabaseClient) {
+        hideAllScreens();
+        const authScreen = document.getElementById('auth-screen');
+        authScreen.classList.remove('hidden');
+        authScreen.classList.add('active');
+        return;
+    }
+
+    hideAllScreens();
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    currentAuthUser = session?.user ?? null;
+
+    const authScreen = document.getElementById('auth-screen');
     const onboarding = document.getElementById('onboarding-screen');
     const main = document.getElementById('main-content');
     const nav = document.getElementById('bottom-nav');
     const header = document.getElementById('app-header');
 
-    if (onboarded === 'true') {
-        onboarding.classList.add('hidden');
-        onboarding.classList.remove('active');
-        main.classList.remove('hidden');
-        nav.classList.remove('hidden');
-        header.classList.remove('hidden');
-        
-        document.getElementById('user-switcher').value = currentUser.id;
-        updateAllUIs();
-    } else {
+    if (!currentAuthUser) {
+        authScreen.classList.remove('hidden');
+        authScreen.classList.add('active');
+        return;
+    }
+
+    currentUser = users[currentAuthUser.id] ?? null;
+    const onboarded = localStorage.getItem(getOnboardedKey(currentAuthUser.id)) === 'true';
+
+    if (!onboarded || !currentUser) {
         onboarding.classList.remove('hidden');
         onboarding.classList.add('active');
-        main.classList.add('hidden');
-        nav.classList.add('hidden');
-        header.classList.add('hidden');
+        return;
     }
+
+    localStorage.setItem('workommu_current_user_id', currentUser.id);
+    main.classList.remove('hidden');
+    nav.classList.remove('hidden');
+    header.classList.remove('hidden');
+
+    const switcher = document.getElementById('user-switcher');
+    if (switcher) switcher.value = currentUser.id;
+    updateAllUIs();
+}
+
+function setupAuthListeners() {
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchAuthTab(tab.dataset.authTab);
+        });
+    });
+
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    if (loginForm) loginForm.addEventListener('submit', handleLogin);
+    if (signupForm) signupForm.addEventListener('submit', handleSignup);
+}
+
+function switchAuthTab(tabName) {
+    document.querySelectorAll('.auth-tab').forEach(btn => {
+        const isActive = btn.dataset.authTab === tabName;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive);
+    });
+
+    document.getElementById('auth-login-panel').classList.toggle('active', tabName === 'login');
+    document.getElementById('auth-signup-panel').classList.toggle('active', tabName === 'signup');
+    clearAuthMessage();
+}
+
+function showAuthMessage(message, type = 'error') {
+    const el = document.getElementById('auth-message');
+    if (!el) return;
+    el.textContent = message;
+    el.classList.remove('hidden', 'error', 'success');
+    el.classList.add(type);
+}
+
+function clearAuthMessage() {
+    const el = document.getElementById('auth-message');
+    if (!el) return;
+    el.textContent = '';
+    el.classList.add('hidden');
+    el.classList.remove('error', 'success');
+}
+
+function translateAuthError(error) {
+    const msg = error?.message || '';
+    if (msg.includes('Invalid login credentials')) return '이메일 또는 비밀번호가 올바르지 않습니다.';
+    if (msg.includes('User already registered')) return '이미 가입된 이메일입니다.';
+    if (msg.includes('Password should be at least')) return '비밀번호는 8자 이상이어야 합니다.';
+    if (msg.includes('Unable to validate email address')) return '올바른 이메일 주소를 입력해주세요.';
+    return msg || '오류가 발생했습니다. 다시 시도해주세요.';
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    if (!supabaseClient) return;
+
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('btn-login');
+    btn.disabled = true;
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+
+    if (error) {
+        showAuthMessage(translateAuthError(error), 'error');
+        return;
+    }
+
+    clearAuthMessage();
+    await checkAppState();
+}
+
+async function handleSignup(e) {
+    e.preventDefault();
+    if (!supabaseClient) return;
+
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-password-confirm').value;
+
+    if (password !== confirm) {
+        showAuthMessage('비밀번호가 일치하지 않습니다.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('btn-signup');
+    btn.disabled = true;
+
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+    btn.disabled = false;
+
+    if (error) {
+        showAuthMessage(translateAuthError(error), 'error');
+        return;
+    }
+
+    if (data.session) {
+        clearAuthMessage();
+        await checkAppState();
+        return;
+    }
+
+    showAuthMessage('회원가입이 완료되었습니다. 이메일 인증 후 로그인해주세요.', 'success');
+    switchAuthTab('login');
+}
+
+function checkOnboardingState() {
+    checkAppState();
 }
 
 function setupEventListeners() {
@@ -230,15 +382,20 @@ function setupEventListeners() {
     if (onboardingForm) {
         onboardingForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            if (!currentAuthUser) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
             const name = document.getElementById('user-name').value;
             const country = document.getElementById('user-country').value;
             const city = document.getElementById('user-city').value;
             const job = document.getElementById('user-job').value;
 
-            // Create new user based on onboarding
-            const newUserId = `user_${Date.now()}`;
+            const newUserId = currentAuthUser.id;
             const newUser = {
                 id: newUserId,
+                email: currentAuthUser.email,
                 name: name,
                 country: country,
                 city: city,
@@ -251,13 +408,11 @@ function setupEventListeners() {
             users[newUserId] = newUser;
             currentUser = newUser;
 
-            localStorage.setItem('workommu_onboarded', 'true');
+            localStorage.setItem(getOnboardedKey(currentAuthUser.id), 'true');
             saveAllData();
-            
-            // Clear form inputs
+
             onboardingForm.reset();
-            
-            checkOnboardingState();
+            checkAppState();
         });
     }
 
@@ -298,15 +453,10 @@ function updateAllUIs() {
 
 function updateUserSwitcher() {
     const switcher = document.getElementById('user-switcher');
-    if (!switcher) return;
-    
-    switcher.innerHTML = Object.values(users).map(user => 
-        `<option value="${user.id}">${user.name} (${user.city}, ${user.job})</option>`
-    ).join('');
-    
-    if (currentUser) {
-        switcher.value = currentUser.id;
-    }
+    if (!switcher || !currentUser) return;
+
+    switcher.innerHTML = `<option value="${currentUser.id}">${currentUser.name} (${currentUser.city}, ${currentUser.job})</option>`;
+    switcher.value = currentUser.id;
 }
 
 function updateHomeUI() {
@@ -569,8 +719,21 @@ function completeReview(comment) {
 }
 
 window.goToOnboarding = function() {
-    localStorage.removeItem('workommu_onboarded');
-    checkOnboardingState();
+    if (currentAuthUser) {
+        localStorage.removeItem(getOnboardedKey(currentAuthUser.id));
+    }
+    checkAppState();
+};
+
+window.logout = async function() {
+    if (!supabaseClient) return;
+    await supabaseClient.auth.signOut();
+    currentUser = null;
+    currentAuthUser = null;
+    switchAuthTab('login');
+    document.getElementById('login-form')?.reset();
+    document.getElementById('signup-form')?.reset();
+    await checkAppState();
 };
 
 window.deleteAccount = function() {
@@ -578,27 +741,67 @@ window.deleteAccount = function() {
         alert('삭제할 유저가 없습니다.');
         return;
     }
-    if (confirm(`정말로 현재 계정(${currentUser.name})을 완전히 삭제하시겠습니까?\n이 계정의 크레딧, 든든 점수, 히스토리를 포함한 모든 데이터가 삭제됩니다.`)) {
+    if (confirm(`정말로 현재 계정(${currentUser.name})의 프로필 데이터를 삭제하시겠습니까?\n크레딧, 든든 점수, 히스토리가 모두 삭제됩니다.`)) {
         const deletedId = currentUser.id;
         delete users[deletedId];
-        
-        // Save users
+        localStorage.removeItem(getOnboardedKey(deletedId));
+        localStorage.removeItem('workommu_current_user_id');
         localStorage.setItem('workommu_users', JSON.stringify(users));
 
-        const userKeys = Object.keys(users);
-        if (userKeys.length > 0) {
-            // Switch to the first available user
-            currentUser = users[userKeys[0]];
-            localStorage.setItem('workommu_current_user_id', currentUser.id);
-            alert('계정이 삭제되었습니다. 다른 계정으로 전환합니다.');
-            location.reload();
-        } else {
-            // No users left
-            currentUser = null;
-            localStorage.removeItem('workommu_current_user_id');
-            localStorage.removeItem('workommu_onboarded');
-            alert('계정이 삭제되었습니다. 계정이 없으므로 온보딩 화면으로 이동합니다.');
-            location.reload();
+        currentUser = null;
+        alert('프로필이 삭제되었습니다. 온보딩 화면으로 이동합니다.');
+        checkAppState();
+    }
+};
+
+window.clearBoards = async function() {
+    if (!currentUser) {
+        alert('로그인이 필요한 서비스입니다.');
+        return;
+    }
+
+    if (confirm('정말로 정보 게시판과 도움 게시판의 모든 글을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없으며, Supabase 데이터베이스와 화면의 목록이 즉시 초기화됩니다.\n(프로필, 크레딧, 든든 점수, 도움 히스토리는 안전하게 유지됩니다)')) {
+        try {
+            // 1. Supabase에서 정보 게시판(info_posts)과 도움 게시판(help_requests)의 모든 데이터 삭제
+            if (supabaseClient) {
+                const { error: infoError } = await supabaseClient
+                    .from('info_posts')
+                    .delete()
+                    .not('id', 'is', null);
+
+                if (infoError) {
+                    console.error('Supabase info_posts 삭제 실패:', infoError);
+                    alert('정보 게시판 데이터 삭제 중 오류가 발생했습니다: ' + infoError.message);
+                    return;
+                }
+
+                const { error: helpError } = await supabaseClient
+                    .from('help_requests')
+                    .delete()
+                    .not('id', 'is', null);
+
+                if (helpError) {
+                    console.error('Supabase help_requests 삭제 실패:', helpError);
+                    alert('도움 게시판 데이터 삭제 중 오류가 발생했습니다: ' + helpError.message);
+                    return;
+                }
+            }
+
+            // 2. 로컬 메모리 초기화
+            infoPosts = [];
+            helpRequests = [];
+
+            // 3. 로컬 스토리지 데이터 동기화 및 저장
+            saveAllData();
+
+            // 4. 즉시 화면 갱신
+            updateAllUIs();
+
+            alert('게시판 초기화가 완료되었습니다. Supabase 데이터베이스와 로컬 데이터가 모두 삭제되었습니다.');
+        } catch (err) {
+            console.error('초기화 작업 중 알 수 없는 오류 발생:', err);
+            alert('초기화 중 오류가 발생했습니다: ' + err.message);
         }
     }
 };
+

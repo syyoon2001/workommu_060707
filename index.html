@@ -27,8 +27,73 @@
             </div>
         </header>
 
+        <!-- AUTH SCREEN -->
+        <section id="auth-screen" class="screen active">
+            <div class="onboarding-card auth-card">
+                <div class="onboarding-header">
+                    <span class="subtitle">Welcome to Workommu</span>
+                    <h1 class="title">워킹홀리데이,<br><span class="highlight">워코뮤</span>와 함께해요!</h1>
+                    <p class="description">로그인하거나 새 계정을 만들어 시작하세요.</p>
+                </div>
+
+                <div class="auth-tabs" role="tablist">
+                    <button type="button" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">로그인</button>
+                    <button type="button" class="auth-tab" data-auth-tab="signup" role="tab" aria-selected="false">회원가입</button>
+                </div>
+
+                <div id="auth-login-panel" class="auth-panel active" role="tabpanel">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">이메일</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="login-email" placeholder="이메일을 입력해주세요" required autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">비밀번호</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="login-password" placeholder="비밀번호를 입력해주세요" required autocomplete="current-password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="btn-login">로그인</button>
+                    </form>
+                </div>
+
+                <div id="auth-signup-panel" class="auth-panel" role="tabpanel">
+                    <form id="signup-form">
+                        <div class="form-group">
+                            <label for="signup-email">이메일</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="signup-email" placeholder="이메일을 입력해주세요" required autocomplete="email">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">비밀번호</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="signup-password" placeholder="8자 이상 입력해주세요" required minlength="8" autocomplete="new-password">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password-confirm">비밀번호 확인</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="signup-password-confirm" placeholder="비밀번호를 다시 입력해주세요" required minlength="8" autocomplete="new-password">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="btn-signup">회원가입</button>
+                    </form>
+                </div>
+
+                <p id="auth-message" class="auth-message hidden" aria-live="polite"></p>
+            </div>
+        </section>
+
         <!-- ONBOARDING SCREEN -->
-        <section id="onboarding-screen" class="screen active">
+        <section id="onboarding-screen" class="screen">
             <div class="onboarding-card">
                 <div class="onboarding-header">
                     <span class="subtitle">Welcome to Workommu</span>
@@ -224,6 +289,8 @@
                 <div class="settings-section" style="margin-top: 24px; display: flex; flex-direction: column; gap: 12px;">
                     <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: var(--text-dark);">시스템 설정</h3>
                     <button class="btn btn-primary-outline btn-block" onclick="goToOnboarding()">온보딩 화면 이동</button>
+                    <button class="btn btn-danger-outline btn-block" onclick="clearBoards()">게시판 초기화</button>
+                    <button class="btn btn-secondary btn-block" onclick="logout()">로그아웃</button>
                     <button class="btn btn-danger-outline btn-block" onclick="deleteAccount()">계정 삭제</button>
                 </div>
             </section>
@@ -302,6 +369,8 @@
         </nav>
     </div>
 
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
 </html>
