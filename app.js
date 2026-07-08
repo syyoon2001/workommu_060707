@@ -269,6 +269,19 @@ function setupEventListeners() {
         });
     }
 
+    // Dev Panel 계정 전환 (시연/테스트 전용 - 실제 Supabase 로그인 세션은 바뀌지 않고
+    // 로컬에 저장된 프로필들 사이에서만 화면 표시용 currentUser를 바꾼다)
+    const devUserSwitcher = document.getElementById('dev-user-switcher');
+    if (devUserSwitcher) {
+        devUserSwitcher.addEventListener('change', () => {
+            const selected = users[devUserSwitcher.value];
+            if (!selected) return;
+            currentUser = selected;
+            saveAllData();
+            updateAllUIs();
+        });
+    }
+
     // Info Post Submit
     if (infoPostForm) {
         infoPostForm.addEventListener('submit', (e) => {
@@ -446,11 +459,24 @@ function switchView(viewName) {
 }
 
 function updateAllUIs() {
+    updateDevUserSwitcher();
     updateHomeUI();
     updateMyPageUI();
     renderInfoPosts();
     renderHelpRequests();
     checkIncomingResponses();
+}
+
+function updateDevUserSwitcher() {
+    const switcher = document.getElementById('dev-user-switcher');
+    if (!switcher) return;
+
+    const userList = Object.values(users);
+    switcher.innerHTML = userList
+        .map(u => `<option value="${u.id}">${u.name} (${u.city}, ${u.job})</option>`)
+        .join('');
+
+    if (currentUser) switcher.value = currentUser.id;
 }
 
 function updateHomeUI() {

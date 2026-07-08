@@ -146,7 +146,7 @@ header {
 }
 
 .dev-panel.open .dev-panel-body {
-    width: 150px;
+    width: 170px;
     padding: 10px;
     opacity: 1;
 }
@@ -156,6 +156,17 @@ header {
     letter-spacing: 0.1em;
     text-align: center;
     color: rgba(255, 255, 255, 0.65);
+}
+
+.dev-panel-select {
+    font-size: 0.7rem;
+    padding: 5px 6px;
+    border: none;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-dark);
+    cursor: pointer;
+    max-width: 100%;
 }
 
 .dev-panel-btn {
