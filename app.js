@@ -282,7 +282,14 @@ function setupEventListeners() {
             if (!selected) return;
             currentUser = selected;
             saveAllData();
-            updateAllUIs();
+
+            // 로그인/온보딩 화면에 있었다면 실제 로그인 없이 바로 해당 계정의
+            // 마이페이지로 진입시킨다 (시연/테스트 전용 지름길).
+            hideAllScreens();
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            document.getElementById('app-header').classList.remove('hidden');
+            switchView('mypage');
         });
     }
 
