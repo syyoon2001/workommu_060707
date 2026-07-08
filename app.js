@@ -515,7 +515,12 @@ function updateMyPageUI() {
     if (elDeun) elDeun.textContent = `${currentUser.deundeunScore}점`;
     const elCredit = document.getElementById('my-credit');
     if (elCredit) elCredit.textContent = `${currentUser.helpCredit} C`;
-    
+    const elReviewCount = document.getElementById('my-review-count');
+    if (elReviewCount) {
+        const reviewCount = (currentUser.history || []).filter(h => !!h.comment).length;
+        elReviewCount.textContent = `${reviewCount}건`;
+    }
+
     renderHistory();
 }
 
