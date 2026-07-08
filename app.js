@@ -396,6 +396,11 @@ function setupEventListeners() {
 
     document.getElementById('btn-go-home').addEventListener('click', () => switchView('home'));
 
+    const btnHomeToHelp = document.getElementById('btn-home-to-help');
+    if (btnHomeToHelp) {
+        btnHomeToHelp.addEventListener('click', () => switchView('help'));
+    }
+
     // Onboarding Form
     const onboardingForm = document.getElementById('onboarding-form');
     if (onboardingForm) {
