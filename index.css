@@ -645,7 +645,7 @@ nav {
     backdrop-filter: blur(15px);
     border-top: 1px solid var(--border-color);
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     padding: 0 0 env(safe-area-inset-bottom);
     z-index: 1000;
 }
