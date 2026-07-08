@@ -736,21 +736,50 @@ window.logout = async function() {
     await checkAppState();
 };
 
-window.deleteAccount = function() {
-    if (!currentUser) {
-        alert('삭제할 유저가 없습니다.');
+window.deleteAccount = async function() {
+    if (!currentUser || !currentAuthUser) {
+        alert('삭제할 계정이 없습니다.');
         return;
     }
-    if (confirm(`정말로 현재 계정(${currentUser.name})의 프로필 데이터를 삭제하시겠습니까?\n크레딧, 든든 점수, 히스토리가 모두 삭제됩니다.`)) {
-        const deletedId = currentUser.id;
+    if (!confirm(`정말로 현재 계정(${currentUser.name})을 완전히 삭제하시겠습니까?\n프로필, 크레딧, 든든 점수, 도움 히스토리는 물론 로그인 계정 자체도 영구 삭제되며 되돌릴 수 없습니다.`)) {
+        return;
+    }
+
+    const btn = document.getElementById('btn-delete-account');
+    if (btn) btn.disabled = true;
+
+    try {
+        const { error } = await supabaseClient.functions.invoke('delete-account');
+
+        if (error) {
+            let message = error.message;
+            try {
+                const body = await error.context.json();
+                if (body?.error) message = body.error;
+            } catch (_) { /* keep default message */ }
+            console.error('계정 삭제 실패:', error);
+            alert('계정 삭제 중 오류가 발생했습니다: ' + message);
+            return;
+        }
+
+        const deletedId = currentAuthUser.id;
         delete users[deletedId];
         localStorage.removeItem(getOnboardedKey(deletedId));
         localStorage.removeItem('workommu_current_user_id');
         localStorage.setItem('workommu_users', JSON.stringify(users));
 
         currentUser = null;
-        alert('프로필이 삭제되었습니다. 온보딩 화면으로 이동합니다.');
-        checkAppState();
+        currentAuthUser = null;
+        await supabaseClient.auth.signOut();
+
+        alert('계정이 완전히 삭제되었습니다. 로그인 화면으로 이동합니다.');
+        switchAuthTab('login');
+        await checkAppState();
+    } catch (err) {
+        console.error('계정 삭제 중 알 수 없는 오류 발생:', err);
+        alert('계정 삭제 중 오류가 발생했습니다: ' + err.message);
+    } finally {
+        if (btn) btn.disabled = false;
     }
 };
 
