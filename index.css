@@ -1014,7 +1014,7 @@ nav {
     gap: 6px;
 }
 
-.history-list {
+#history-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
