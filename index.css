@@ -843,18 +843,6 @@ nav {
     border-radius: 6px;
 }
 
-.help-price {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--gold-color);
-    display: flex;
-    align-items: center;
-}
-
-.help-price i {
-    margin-right: 4px;
-}
-
 .help-title {
     font-size: 0.95rem;
     font-weight: 700;

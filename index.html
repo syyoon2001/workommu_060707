@@ -244,11 +244,15 @@
                     </div>
                     <form id="help-request-form">
                         <div class="form-group">
-                            <label>카테고리 (필요 크레딧)</label>
-                            <select id="help-category" required>
-                                <option value="병원 동행" data-cost="1">병원 동행 (1 C)</option>
-                                <option value="일자리 소개" data-cost="2">일자리 소개 (2 C)</option>
-                                <option value="카풀" data-cost="3">카풀 (3 C)</option>
+                            <label for="help-category-main">카테고리</label>
+                            <select id="help-category-main" required>
+                                <option value="" disabled selected>대분류를 선택해주세요</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="help-category-sub">세부 항목</label>
+                            <select id="help-category-sub" required disabled>
+                                <option value="" disabled selected>대분류를 먼저 선택해주세요</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -471,6 +475,7 @@
     </div>
 
     <script src="config.js"></script>
+    <script src="categories.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>

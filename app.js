@@ -4,6 +4,9 @@ const cityData = {
     '일본': ['도쿄', '오사카', '교토']
 };
 
+// 도움 요청 1건당 고정 차감 크레딧 (카테고리별 금액 차등은 UI/데이터 어디에도 노출하지 않는다)
+const HELP_REQUEST_CREDIT_COST = 1;
+
 function getDefaultUsers() {
     return {};
 }
@@ -17,6 +20,25 @@ function syncCityOptions(countrySelect, citySelect, selectedCity) {
     if (selectedCity && cities.includes(selectedCity)) {
         citySelect.value = selectedCity;
     }
+}
+
+// 도움 요청 대분류/소분류 2단계 드롭다운 (categories.js의 HELP_CATEGORIES 기반)
+function resetHelpCategorySelects() {
+    const mainSelect = document.getElementById('help-category-main');
+    const subSelect = document.getElementById('help-category-sub');
+    if (!mainSelect || !subSelect) return;
+
+    mainSelect.innerHTML = '<option value="" disabled selected>대분류를 선택해주세요</option>' +
+                          Object.keys(HELP_CATEGORIES).map(c => `<option value="${c}">${c}</option>`).join('');
+    subSelect.innerHTML = '<option value="" disabled selected>대분류를 먼저 선택해주세요</option>';
+    subSelect.disabled = true;
+}
+
+function syncHelpSubcategoryOptions(mainSelect, subSelect) {
+    const subs = HELP_CATEGORIES[mainSelect.value] || [];
+    subSelect.innerHTML = '<option value="" disabled selected>세부 항목을 선택해주세요</option>' +
+                          subs.map(s => `<option value="${s}">${s}</option>`).join('');
+    subSelect.disabled = false;
 }
 
 let supabaseClient = null;
@@ -333,20 +355,33 @@ function setupEventListeners() {
 
     // Help Modal handling
     if (btnOpenHelp) {
-        btnOpenHelp.addEventListener('click', () => helpModal.classList.add('active'));
+        btnOpenHelp.addEventListener('click', () => {
+            resetHelpCategorySelects();
+            helpModal.classList.add('active');
+        });
     }
     if (btnCloseHelp) {
         btnCloseHelp.addEventListener('click', () => helpModal.classList.remove('active'));
     }
 
+    // 도움 요청 카테고리: 대분류 선택 시 소분류 옵션을 채워준다
+    const helpCategoryMainSelect = document.getElementById('help-category-main');
+    const helpCategorySubSelect = document.getElementById('help-category-sub');
+    if (helpCategoryMainSelect && helpCategorySubSelect) {
+        resetHelpCategorySelects();
+        helpCategoryMainSelect.addEventListener('change', () => {
+            syncHelpSubcategoryOptions(helpCategoryMainSelect, helpCategorySubSelect);
+        });
+    }
+
     if (helpRequestForm) {
         helpRequestForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const categoryEl = document.getElementById('help-category');
-            const category = categoryEl.value;
-            const cost = parseInt(categoryEl.options[categoryEl.selectedIndex].getAttribute('data-cost'));
+            const category = document.getElementById('help-category-main').value;
+            const subcategory = document.getElementById('help-category-sub').value;
             const content = document.getElementById('help-content').value;
             const cityOnly = document.getElementById('help-city-only').checked;
+            const cost = HELP_REQUEST_CREDIT_COST;
 
             if (currentUser.helpCredit < cost) {
                 alert('크레딧이 부족합니다.');
@@ -362,6 +397,7 @@ function setupEventListeners() {
                 country: currentUser.country,
                 city: currentUser.city,
                 category: category,
+                subcategory: subcategory,
                 content: content,
                 cityOnly: cityOnly,
                 cost: cost,
@@ -373,6 +409,7 @@ function setupEventListeners() {
             currentUser.helpCredit -= cost;
 
             helpRequestForm.reset();
+            resetHelpCategorySelects();
             helpModal.classList.remove('active');
             saveAllData();
             updateAllUIs();
@@ -690,8 +727,7 @@ function renderHelpRequests() {
         return `
             <div class="help-card">
                 <div class="help-card-header">
-                    <span class="help-category-badge">${req.category}</span>
-                    <span class="help-price"><i class="fa-solid fa-coins"></i> ${req.cost} C</span>
+                    <span class="help-category-badge">${req.category} · ${req.subcategory}</span>
                 </div>
                 <div class="help-title">${req.content}</div>
                 <div class="help-footer">
@@ -763,7 +799,7 @@ function acceptHelp(request, responder) {
 
     const commonData = {
         id: request.id,
-        type: request.category,
+        type: `${request.category} · ${request.subcategory}`,
         date: new Date().toLocaleDateString(),
         status: 'ongoing',
         cost: request.cost
