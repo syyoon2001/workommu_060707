@@ -913,7 +913,7 @@ nav {
     height: 60px;
     border-radius: 50%;
     background: #D4EBF5;
-    border: 2px solid var(--primary-light);
+    border: 1px solid var(--border-color);
     display: flex;
     justify-content: center;
     align-items: center;
