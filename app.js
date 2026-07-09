@@ -47,6 +47,8 @@ let users = {};
 let currentUser = null;
 let helpRequests = [];
 let infoPosts = [];
+let chatRooms = [];
+let currentChatRoomId = null;
 let currentReviewingHistoryId = null;
 let currentReviewRating = 0;
 let pendingAvatarDataUrl = null;
@@ -61,6 +63,7 @@ async function initApp() {
     setupEventListeners();
     setupAuthListeners();
     await checkAppState();
+    setInterval(pollForUpdates, 4000);
 }
 
 function initSupabase() {
@@ -109,6 +112,9 @@ function initData() {
 
     const savedHelp = localStorage.getItem('workommu_help_requests');
     helpRequests = savedHelp ? JSON.parse(savedHelp) : [];
+
+    const savedChatRooms = localStorage.getItem('workommu_chat_rooms');
+    chatRooms = savedChatRooms ? JSON.parse(savedChatRooms) : [];
 }
 
 function saveAllData() {
@@ -118,6 +124,29 @@ function saveAllData() {
     }
     localStorage.setItem('workommu_info_posts', JSON.stringify(infoPosts));
     localStorage.setItem('workommu_help_requests', JSON.stringify(helpRequests));
+    localStorage.setItem('workommu_chat_rooms', JSON.stringify(chatRooms));
+}
+
+// 별도 실시간 인프라가 없어 localStorage를 폴링하여 다른 탭/계정에서의 변경을 반영한다
+// (같은 브라우저에서 TEST 패널로 요청자/응답자 계정을 오가며 채팅을 확인할 때 사용)
+function pollForUpdates() {
+    if (!currentUser) return;
+
+    const savedHelp = localStorage.getItem('workommu_help_requests');
+    helpRequests = savedHelp ? JSON.parse(savedHelp) : [];
+
+    const savedChatRooms = localStorage.getItem('workommu_chat_rooms');
+    chatRooms = savedChatRooms ? JSON.parse(savedChatRooms) : [];
+
+    const savedUsers = localStorage.getItem('workommu_users');
+    if (savedUsers) {
+        users = JSON.parse(savedUsers);
+        if (currentUser && users[currentUser.id]) {
+            currentUser = users[currentUser.id];
+        }
+    }
+
+    updateAllUIs();
 }
 
 function hideAllScreens() {
@@ -564,6 +593,55 @@ function setupEventListeners() {
             switchView('mypage');
         });
     }
+
+    // Chat Room
+    const btnCloseChatroom = document.getElementById('btn-close-chatroom');
+    if (btnCloseChatroom) {
+        btnCloseChatroom.addEventListener('click', () => {
+            currentChatRoomId = null;
+            switchView('chat');
+        });
+    }
+
+    const btnChatroomAccept = document.getElementById('btn-chatroom-accept');
+    if (btnChatroomAccept) {
+        btnChatroomAccept.addEventListener('click', () => {
+            if (currentChatRoomId) handleChatAccept(currentChatRoomId);
+        });
+    }
+
+    const btnChatroomDecline = document.getElementById('btn-chatroom-decline');
+    if (btnChatroomDecline) {
+        btnChatroomDecline.addEventListener('click', () => {
+            if (currentChatRoomId) handleChatDecline(currentChatRoomId);
+        });
+    }
+
+    const chatMessageForm = document.getElementById('chat-message-form');
+    if (chatMessageForm) {
+        chatMessageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!currentChatRoomId) return;
+
+            const room = chatRooms.find(r => r.id === currentChatRoomId);
+            if (!room || room.status === 'declined') return;
+
+            const input = document.getElementById('chat-message-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            room.messages.push({
+                id: Date.now(),
+                senderId: currentUser.id,
+                senderName: currentUser.name,
+                text: text
+            });
+
+            input.value = '';
+            saveAllData();
+            updateAllUIs();
+        });
+    }
 }
 
 function openProfileSettings() {
@@ -604,7 +682,8 @@ function updateAllUIs() {
     updateMyPageUI();
     renderInfoPosts();
     renderHelpRequests();
-    checkIncomingResponses();
+    renderChatList();
+    renderActiveChatRoom();
 }
 
 function updateDevUserSwitcher() {
@@ -750,51 +829,201 @@ function handleHelpResponse(requestId) {
     const req = helpRequests.find(r => r.id === requestId);
     if (!req) return;
 
-    if (!req.responders) req.responders = [];
-    req.responders.push({
+    const responderInfo = {
         id: currentUser.id,
         name: currentUser.name,
         job: currentUser.job,
         deundeunScore: currentUser.deundeunScore
-    });
+    };
+
+    if (!req.responders) req.responders = [];
+    req.responders.push(responderInfo);
+
+    const room = getOrCreateChatRoom(req, responderInfo);
 
     saveAllData();
-    alert(`${req.author}님께 도움 의사를 전달했습니다!`);
     updateAllUIs();
+    openChatRoom(room.id);
 }
 
-function checkIncomingResponses() {
-    const myReqWithResp = helpRequests.find(r => r.authorId === currentUser.id && r.status === 'open' && r.responders && r.responders.length > 0);
-    if (myReqWithResp) {
-        showResponseModal(myReqWithResp, myReqWithResp.responders[0]);
+// 요청 ID 기준 1:1 채팅방을 생성하거나(없으면) 기존 채팅방을 재사용한다
+function getOrCreateChatRoom(request, responder) {
+    let room = chatRooms.find(r => r.requestId === request.id);
+    if (!room) {
+        room = {
+            id: request.id,
+            requestId: request.id,
+            requesterId: request.authorId,
+            requesterName: request.author,
+            responderId: responder.id,
+            responderName: responder.name,
+            responderJob: responder.job,
+            responderDeundeunScore: responder.deundeunScore,
+            status: 'pending', // pending | accepted | declined
+            messages: []
+        };
+        chatRooms.unshift(room);
+    } else if (room.status === 'declined') {
+        // 이전 응답이 거절된 뒤 같은 요청에 새 응답이 들어오면, 새 응답자 정보로 초기화해 다시 진행한다
+        room.responderId = responder.id;
+        room.responderName = responder.name;
+        room.responderJob = responder.job;
+        room.responderDeundeunScore = responder.deundeunScore;
+        room.status = 'pending';
+        room.messages = [];
     }
+    return room;
 }
 
-function showResponseModal(request, responder) {
-    const modal = document.getElementById('response-modal');
-    const preview = document.getElementById('responder-profile-preview');
-    
-    preview.innerHTML = `
+function openChatRoom(roomId) {
+    currentChatRoomId = roomId;
+    switchView('chatroom');
+}
+
+// 채팅 메시지는 사용자가 자유 입력한 텍스트라 innerHTML에 그대로 넣으면 XSS로 이어질 수 있어 이스케이프한다
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function renderChatList() {
+    const container = document.getElementById('chat-list-container');
+    if (!container || !currentUser) return;
+
+    const myRooms = chatRooms
+        .filter(r => r.requesterId === currentUser.id || r.responderId === currentUser.id)
+        .slice()
+        .sort((a, b) => {
+            const aTime = a.messages.length ? a.messages[a.messages.length - 1].id : a.id;
+            const bTime = b.messages.length ? b.messages[b.messages.length - 1].id : b.id;
+            return bTime - aTime;
+        });
+
+    if (myRooms.length === 0) {
+        container.innerHTML = '<div class="no-posts">아직 채팅방이 없습니다.</div>';
+        return;
+    }
+
+    container.innerHTML = myRooms.map(room => {
+        const isRequester = currentUser.id === room.requesterId;
+        const counterpartName = isRequester ? room.responderName : room.requesterName;
+        const lastMessage = room.messages.length > 0
+            ? escapeHtml(room.messages[room.messages.length - 1].text)
+            : '아직 메시지가 없습니다.';
+
+        const statusLabel = room.status === 'accepted' ? '진행중' : (room.status === 'declined' ? '거절됨' : '대기중');
+        const statusClass = room.status === 'declined' ? 'status-completed' : 'status-ongoing';
+
+        return `
+            <div class="chat-list-item" onclick="openChatRoom(${room.id})">
+                <div class="chat-list-item-header">
+                    <span class="chat-list-item-name">${counterpartName}</span>
+                    <span class="history-status-badge ${statusClass}">${statusLabel}</span>
+                </div>
+                <div class="chat-list-item-preview">${lastMessage}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// 현재 열려있는 채팅방이 있으면 최신 상태로 다시 그린다 (폴링/상태 변경 시 호출)
+function renderActiveChatRoom() {
+    if (!currentChatRoomId) return;
+    const stillOpen = document.getElementById('view-chatroom')?.classList.contains('active');
+    if (stillOpen) renderChatRoom(currentChatRoomId);
+}
+
+function renderChatRoom(roomId) {
+    const room = chatRooms.find(r => r.id === roomId);
+    if (!room || !currentUser) return;
+
+    const isRequester = currentUser.id === room.requesterId;
+    const counterpartName = isRequester ? room.responderName : room.requesterName;
+    const request = helpRequests.find(r => r.id === room.requestId);
+
+    document.getElementById('chatroom-title').textContent = counterpartName;
+    document.getElementById('chatroom-subtitle').textContent = request ? `${request.category} · ${request.subcategory}` : '';
+
+    const preview = document.getElementById('chatroom-profile-preview');
+    preview.innerHTML = isRequester ? `
         <div class="help-meta">
-            <span class="user-info" style="font-size: 1.1rem;">${responder.name} (${responder.job})</span>
-            <span style="font-size: 0.9rem;">든든 점수: <span class="text-heart">${responder.deundeunScore}점</span></span>
+            <span class="user-info" style="font-size: 1.05rem;">${room.responderName} (${room.responderJob})</span>
+            <span style="font-size: 0.85rem;">든든 점수: <span class="text-heart">${room.responderDeundeunScore}점</span></span>
+        </div>
+    ` : `
+        <div class="help-meta">
+            <span class="user-info" style="font-size: 1.05rem;">${room.requesterName}</span>
+            <span style="font-size: 0.85rem;">도움 요청자</span>
         </div>
     `;
 
-    document.getElementById('btn-accept-help').onclick = () => {
-        acceptHelp(request, responder);
-        modal.classList.remove('active');
+    const actions = document.getElementById('chatroom-actions');
+    actions.classList.toggle('hidden', !(room.status === 'pending' && isRequester));
+
+    const banner = document.getElementById('chatroom-status-banner');
+    const input = document.getElementById('chat-message-input');
+    const sendBtn = document.querySelector('#chat-message-form button[type="submit"]');
+
+    if (room.status === 'declined') {
+        banner.textContent = '거절된 매칭입니다. 더 이상 메시지를 보낼 수 없습니다.';
+        banner.classList.remove('hidden');
+        input.disabled = true;
+        sendBtn.disabled = true;
+    } else {
+        if (room.status === 'accepted') {
+            banner.textContent = '매칭이 수락되어 진행중입니다.';
+            banner.classList.remove('hidden');
+        } else {
+            banner.classList.add('hidden');
+        }
+        input.disabled = false;
+        sendBtn.disabled = false;
+    }
+
+    const messagesContainer = document.getElementById('chat-messages-container');
+    if (room.messages.length === 0) {
+        messagesContainer.innerHTML = '<div class="no-history">아직 메시지가 없습니다.</div>';
+    } else {
+        messagesContainer.innerHTML = room.messages.map(m => `
+            <div class="chat-message-row ${m.senderId === currentUser.id ? 'mine' : 'theirs'}">
+                <div class="chat-bubble">${escapeHtml(m.text)}</div>
+            </div>
+        `).join('');
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+}
+
+function handleChatAccept(roomId) {
+    const room = chatRooms.find(r => r.id === roomId);
+    if (!room || room.status !== 'pending') return;
+    const request = helpRequests.find(r => r.id === room.requestId);
+    if (!request) return;
+
+    room.status = 'accepted';
+
+    const responder = {
+        id: room.responderId,
+        name: room.responderName,
+        job: room.responderJob,
+        deundeunScore: room.responderDeundeunScore
     };
 
-    document.getElementById('btn-decline-help').onclick = () => {
-        request.responders.shift();
-        saveAllData();
-        modal.classList.remove('active');
-        updateAllUIs();
-    };
+    acceptHelp(request, responder); // 기존 매칭 수락/히스토리 로직 재사용 (요청 상태 전환, 크레딧/히스토리 반영)
+}
 
-    document.getElementById('btn-close-response-modal').onclick = () => modal.classList.remove('active');
-    modal.classList.add('active');
+function handleChatDecline(roomId) {
+    const room = chatRooms.find(r => r.id === roomId);
+    if (!room || room.status !== 'pending') return;
+    const request = helpRequests.find(r => r.id === room.requestId);
+
+    if (request && request.responders) {
+        request.responders = request.responders.filter(r => r.id !== room.responderId);
+    }
+    room.status = 'declined';
+
+    saveAllData();
+    updateAllUIs();
 }
 
 function acceptHelp(request, responder) {

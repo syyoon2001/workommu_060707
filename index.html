@@ -273,12 +273,46 @@
                 </div>
             </div>
 
+            <!-- CHAT LIST VIEW -->
             <section id="view-chat" class="view">
                 <div class="view-header">
                     <h2 class="view-title">채팅</h2>
-                    <p class="view-subtitle">채팅 기능은 곧 만나보실 수 있어요.</p>
+                    <p class="view-subtitle">매칭된 상대와 대화를 나눠보세요.</p>
                 </div>
-                <div class="no-posts">채팅 기능 준비 중입니다.</div>
+                <div id="chat-list-container" class="chat-list">
+                    <div class="no-posts">아직 채팅방이 없습니다.</div>
+                </div>
+            </section>
+
+            <!-- CHAT ROOM VIEW -->
+            <section id="view-chatroom" class="view">
+                <div class="view-header title-with-btn">
+                    <div>
+                        <h2 class="view-title" id="chatroom-title">채팅</h2>
+                        <p class="view-subtitle" id="chatroom-subtitle"></p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btn-close-chatroom">닫기</button>
+                </div>
+
+                <div id="chatroom-profile-preview" class="profile-preview-card">
+                    <!-- 상대방 프로필 요약 -->
+                </div>
+
+                <div class="chatroom-actions hidden" id="chatroom-actions">
+                    <button class="btn btn-secondary" id="btn-chatroom-decline">거절</button>
+                    <button class="btn btn-primary" id="btn-chatroom-accept">수락</button>
+                </div>
+
+                <div class="chatroom-status-banner hidden" id="chatroom-status-banner"></div>
+
+                <div id="chat-messages-container" class="chat-messages">
+                    <div class="no-history">아직 메시지가 없습니다.</div>
+                </div>
+
+                <form id="chat-message-form" class="chat-input-bar">
+                    <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요" autocomplete="off">
+                    <button type="submit" class="btn btn-primary btn-sm">전송</button>
+                </form>
             </section>
 
             <section id="view-mypage" class="view">
@@ -397,27 +431,6 @@
             <button id="btn-toggle-dev-panel" class="dev-panel-toggle" aria-label="테스트 패널 열기/닫기" aria-expanded="false">
                 <i class="fa-solid fa-chevron-left"></i>
             </button>
-        </div>
-
-        <!-- RESPONSE ACCEPT MODAL (For Requester) -->
-        <div id="response-modal" class="modal">
-            <div class="modal-overlay"></div>
-            <div class="modal-content animate-slide-up">
-                <div class="modal-header">
-                    <h3>도움 요청 응답</h3>
-                    <button class="btn-close-modal" id="btn-close-response-modal">&times;</button>
-                </div>
-                <div class="response-body">
-                    <p class="modal-msg">도움을 수락하시겠습니까?</p>
-                    <div id="responder-profile-preview" class="profile-preview-card">
-                        <!-- Responder info injected here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button id="btn-decline-help" class="btn btn-secondary">거절</button>
-                    <button id="btn-accept-help" class="btn btn-primary">수락</button>
-                </div>
-            </div>
         </div>
 
         <!-- USER DETAIL MODAL -->
