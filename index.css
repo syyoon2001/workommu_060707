@@ -912,7 +912,7 @@ nav {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: #D4EBF5;
+    background: var(--bg-gradient);
     border: 1px solid var(--border-color);
     display: flex;
     justify-content: center;
