@@ -455,7 +455,10 @@ function setupEventListeners() {
 
     const btnHomeToHelp = document.getElementById('btn-home-to-help');
     if (btnHomeToHelp) {
-        btnHomeToHelp.addEventListener('click', () => switchView('help'));
+        btnHomeToHelp.addEventListener('click', () => {
+            resetHelpCategorySelects();
+            helpModal.classList.add('active');
+        });
     }
 
     // Onboarding Form
