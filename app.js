@@ -456,6 +456,7 @@ function setupEventListeners() {
     const btnHomeToHelp = document.getElementById('btn-home-to-help');
     if (btnHomeToHelp) {
         btnHomeToHelp.addEventListener('click', () => {
+            switchView('help');
             resetHelpCategorySelects();
             helpModal.classList.add('active');
         });
