@@ -8,6 +8,17 @@ function getDefaultUsers() {
     return {};
 }
 
+// 국가 선택에 따라 도시 목록을 채워주는 공용 로직 (온보딩/프로필 설정 화면에서 재사용)
+function syncCityOptions(countrySelect, citySelect, selectedCity) {
+    const cities = cityData[countrySelect.value] || [];
+    citySelect.innerHTML = '<option value="" disabled selected>도시를 선택해주세요</option>' +
+                          cities.map(c => `<option value="${c}">${c}</option>`).join('');
+    citySelect.disabled = false;
+    if (selectedCity && cities.includes(selectedCity)) {
+        citySelect.value = selectedCity;
+    }
+}
+
 let supabaseClient = null;
 let currentAuthUser = null;
 let users = {};
@@ -16,6 +27,7 @@ let helpRequests = [];
 let infoPosts = [];
 let currentReviewingHistoryId = null;
 let currentReviewRating = 0;
+let pendingAvatarDataUrl = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -454,12 +466,83 @@ function setupEventListeners() {
     const citySelect = document.getElementById('user-city');
     if (countrySelect && citySelect) {
         countrySelect.addEventListener('change', () => {
-            const cities = cityData[countrySelect.value] || [];
-            citySelect.innerHTML = '<option value="" disabled selected>도시를 선택해주세요</option>' + 
-                                  cities.map(c => `<option value="${c}">${c}</option>`).join('');
-            citySelect.disabled = false;
+            syncCityOptions(countrySelect, citySelect);
         });
     }
+
+    // Profile Settings
+    const btnOpenProfileSettings = document.getElementById('btn-open-profile-settings');
+    if (btnOpenProfileSettings) {
+        btnOpenProfileSettings.addEventListener('click', openProfileSettings);
+    }
+
+    const btnCloseProfileSettings = document.getElementById('btn-close-profile-settings');
+    if (btnCloseProfileSettings) {
+        btnCloseProfileSettings.addEventListener('click', () => switchView('mypage'));
+    }
+
+    const profileSettingsCountrySelect = document.getElementById('profile-settings-country');
+    const profileSettingsCitySelect = document.getElementById('profile-settings-city');
+    if (profileSettingsCountrySelect && profileSettingsCitySelect) {
+        profileSettingsCountrySelect.addEventListener('change', () => {
+            syncCityOptions(profileSettingsCountrySelect, profileSettingsCitySelect);
+        });
+    }
+
+    const profileSettingsPhotoInput = document.getElementById('profile-settings-photo-input');
+    if (profileSettingsPhotoInput) {
+        profileSettingsPhotoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                pendingAvatarDataUrl = ev.target.result;
+                const preview = document.getElementById('profile-settings-avatar-preview');
+                preview.innerHTML = `<img src="${pendingAvatarDataUrl}" alt="프로필 사진" class="avatar-photo-img">`;
+                // TODO: 별도 업로드 API/스토리지가 준비되면 여기서 파일을 업로드하고
+                // 반환된 URL을 currentUser의 프로필 사진 필드에 저장한다. 현재는 로컬 미리보기만 지원.
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const profileSettingsForm = document.getElementById('profile-settings-form');
+    if (profileSettingsForm) {
+        profileSettingsForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            currentUser.country = document.getElementById('profile-settings-country').value;
+            currentUser.city = document.getElementById('profile-settings-city').value;
+            currentUser.job = document.getElementById('profile-settings-job').value;
+
+            saveAllData();
+            updateAllUIs();
+            alert('프로필이 저장되었습니다.');
+            switchView('mypage');
+        });
+    }
+}
+
+function openProfileSettings() {
+    if (!currentUser) return;
+
+    const countrySelect = document.getElementById('profile-settings-country');
+    const citySelect = document.getElementById('profile-settings-city');
+    const jobSelect = document.getElementById('profile-settings-job');
+
+    countrySelect.value = currentUser.country;
+    syncCityOptions(countrySelect, citySelect, currentUser.city);
+    jobSelect.value = currentUser.job;
+
+    pendingAvatarDataUrl = null;
+    const photoInput = document.getElementById('profile-settings-photo-input');
+    if (photoInput) photoInput.value = '';
+    document.getElementById('profile-settings-avatar-preview').innerHTML =
+        '<img src="assets/kori_nuki.png" alt="프로필 사진" class="profile-avatar-img">';
+
+    switchView('profile-settings');
 }
 
 function switchView(viewName) {

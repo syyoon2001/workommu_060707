@@ -301,6 +301,10 @@
                 <div class="settings-section">
                     <h3 class="section-title">시스템 설정</h3>
                     <div class="settings-list">
+                        <button class="settings-row" id="btn-open-profile-settings">
+                            <span class="settings-row-label"><i class="fa-solid fa-gear"></i>프로필 설정</span>
+                            <i class="fa-solid fa-chevron-right settings-row-arrow"></i>
+                        </button>
                         <button class="settings-row" onclick="logout()">
                             <span class="settings-row-label"><i class="fa-solid fa-arrow-right-from-bracket"></i>로그아웃</span>
                             <i class="fa-solid fa-chevron-right settings-row-arrow"></i>
@@ -310,6 +314,71 @@
                             <i class="fa-solid fa-chevron-right settings-row-arrow"></i>
                         </button>
                     </div>
+                </div>
+            </section>
+
+            <!-- PROFILE SETTINGS VIEW -->
+            <section id="view-profile-settings" class="view">
+                <div class="view-header title-with-btn">
+                    <div>
+                        <h2 class="view-title">프로필 설정</h2>
+                        <p class="view-subtitle">프로필 사진과 국가·지역·직군 정보를 수정하세요.</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="btn-close-profile-settings">닫기</button>
+                </div>
+
+                <div class="profile-card">
+                    <div class="avatar-upload-section">
+                        <div class="profile-avatar profile-avatar-lg" id="profile-settings-avatar-preview">
+                            <img src="assets/kori_nuki.png" alt="프로필 사진" class="profile-avatar-img">
+                        </div>
+                        <label for="profile-settings-photo-input" class="btn btn-primary-outline btn-sm">
+                            <i class="fa-solid fa-camera"></i>&nbsp;사진 변경
+                        </label>
+                        <input type="file" id="profile-settings-photo-input" accept="image/*" class="hidden">
+                    </div>
+                </div>
+
+                <div class="post-form-card">
+                    <form id="profile-settings-form">
+                        <div class="form-group">
+                            <label for="profile-settings-country">목표 국가</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-earth-asia input-icon"></i>
+                                <select id="profile-settings-country" required>
+                                    <option value="" disabled>국가를 선택해주세요</option>
+                                    <option value="호주">호주</option>
+                                    <option value="캐나다">캐나다</option>
+                                    <option value="일본">일본</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-settings-city">희망 도시</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-city input-icon"></i>
+                                <select id="profile-settings-city" required>
+                                    <option value="" disabled>국가를 먼저 선택해주세요</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="profile-settings-job">희망 직군</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-briefcase input-icon"></i>
+                                <select id="profile-settings-job" required>
+                                    <option value="" disabled>직군을 선택해주세요</option>
+                                    <option value="농장">농장</option>
+                                    <option value="공장">공장</option>
+                                    <option value="서비스·요식업">서비스·요식업</option>
+                                    <option value="사무직">사무직</option>
+                                    <option value="기타">기타 (직접 입력)</option>
+                                    <option value="아직 잘 모르겠음">아직 잘 모르겠음</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">저장하기</button>
+                    </form>
                 </div>
             </section>
         </main>
